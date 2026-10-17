@@ -3,7 +3,7 @@
   "builds": [
     {
       "src": "api.py",
-      "use": "python",
+      "use": "@vercel/python",
       "config": {
         "runtime": "python3.12"
       }
