@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  falkordb:
+    image: falkordb/falkordb:latest
+    container_name: graphhacks-falkordb
+    ports:
+      - "6379:6379"
+    environment:
+      - FALKORDB_GRAPH_NAME=graphhacks
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  api:
+    build: .
+    container_name: graphhacks-api
+    ports:
+      - "8000:8000"
+    environment:
+      - FALKORDB_HOST=falkordb
+      - FALKORDB_PORT=6379
+      - FALKORDB_GRAPH=graphhacks
+    depends_on:
+      falkordb:
+        condition: service_healthy
+    command: uvicorn api:app --host 0.0.0.0 --port 8000
