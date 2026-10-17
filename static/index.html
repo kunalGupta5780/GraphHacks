@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GraphHacks Agent</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+            background: linear-gradient(90deg, #00ff88, #00aaff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle { color: #888; margin-bottom: 32px; font-size: 1.1rem; }
+        .feature {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .feature h3 { color: #00ff88; margin-bottom: 8px; }
+        code {
+            background: #1a1a2e;
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: #00aaff;
+            font-size: 0.9rem;
+        }
+        pre {
+            background: #1a1a2e;
+            border-radius: 8px;
+            padding: 16px;
+            overflow-x: auto;
+            margin-top: 8px;
+            border: 1px solid #222;
+        }
+        a { color: #00aaff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .endpoints { display: grid; gap: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GraphHacks Agent</h1>
+        <p class="subtitle">Agent where the knowledge graph shapes what the agent does — built with FalkorDB.</p>
+
+        <div class="feature">
+            <h3>📊 API Endpoints</h3>
+            <div class="endpoints">
+                <div><code>GET  /</code> — This page</div>
+                <div><code>GET  /api/status</code> — Backend info & graph snapshot</div>
+                <div><code>POST /api/ask</code> — Ask a question</div>
+                <div><code>POST /api/seed</code> — Seed the graph</div>
+                <div><code>GET  /api/memory/{user_id}</code> — Memory summary</div>
+                <div><code>GET  /docs</code> — OpenAPI auto-docs</div>
+            </div>
+        </div>
+
+        <div class="feature">
+            <h3>🚀 Ask a Question</h3>
+            <pre>curl -X POST http://localhost:8000/api/ask \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Who has worked on the FalkorDB system?"}'</pre>
+        </div>
+
+        <div class="feature">
+            <h3>🔧 Project Structure</h3>
+            <pre>graph/          — GraphContext ABC + InMemory/FalkorDB backends
+agent/           — GraphReasoner, AgentMemory, GraphExplainer
+main.py          — CLI entry point
+api.py           — FastAPI REST server
+mcp_server.py    — MCP server (stdio mode)</pre>
+        </div>
+
+        <div class="feature">
+            <h3>🔗 Links</h3>
+            <p>GitHub: <a href="https://github.com/kunalGupta5780/GraphHacks">kunalGupta5780/GraphHacks</a></p>
+            <p>FastAPI Docs: <a href="/docs">/docs</a></p>
+        </div>
+    </div>
+</body>
+</html>
