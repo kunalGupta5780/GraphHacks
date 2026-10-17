@@ -2,11 +2,10 @@
   "version": 2,
   "builds": [
     {
-      "source": "api.py",
+      "src": "api.py",
       "use": "python",
       "config": {
-        "runtime": "python3.12",
-        "maxLambdaSize": "50mb"
+        "runtime": "python3.12"
       }
     }
   ],
@@ -15,10 +14,5 @@
       "src": "/(.*)",
       "dest": "/api.py"
     }
-  ],
-  "env": {
-    "FALKORDB_HOST": "localhost",
-    "FALKORDB_PORT": "6379",
-    "FALKORDB_GRAPH": "graphhacks"
-  }
+  ]
 }
