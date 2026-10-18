@@ -50,11 +50,17 @@
         a { color: #00aaff; }
         .track { display: flex; flex-direction: column; gap: 14px; }
         .track-item { display: flex; gap: 12px; }
-        .track-badge { min-width: 70px; padding: 3px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-align: center; }
+        .track-badge { min-width: 80px; padding: 4px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-align: center; flex-shrink: 0; }
         .track-1 { background: #00aaff33; color: #00aaff; }
         .track-2 { background: #ff880033; color: #ff8800; }
         .track-3 { background: #aa00ff33; color: #aa00ff; }
-        .track p { color: #888; font-size: 0.88rem; flex: 1; }
+        .track-content { flex: 1; }
+        .track-content h4 { color: #e0e0e0; font-size: 0.95rem; margin-bottom: 6px; }
+        .track-content p { color: #888; font-size: 0.85rem; margin-bottom: 8px; line-height: 1.5; }
+        .track-focus { color: #00ff88; font-size: 0.8rem; margin: 6px 0 4px; }
+        .track-list { list-style: none; padding-left: 0; display: flex; flex-direction: column; gap: 4px; }
+        .track-list li { color: #aaa; font-size: 0.82rem; padding-left: 20px; position: relative; }
+        .track-list li:before { content: '•'; position: absolute; left: 0; color: #00aaff; }
         pre { background: #1a1a2e; border-radius: 8px; padding: 14px; overflow-x: auto; margin: 12px 0; border: 1px solid #222; font-size: 0.82rem; }
         #node-detail { font-size: 0.82rem; }
         #node-detail .detail-row { margin-bottom: 6px; }
@@ -166,18 +172,58 @@
             <div class="card">
                 <h3>Three Hackathon Tracks</h3>
                 <div class="track">
+
+                    <!-- Track 01 -->
                     <div class="track-item">
-                        <span class="track-badge track-1">Track 01</span>
-                        <p><strong>Agents on Connected Data</strong> — Multi-hop reasoning through the graph: trace paths from Person → Project → System → Document in a single query. Built on the GraphReasoner with shortest-path and neighbor traversal.</p>
+                        <span class="track-badge track-1">🤖 Track 01</span>
+                        <div class="track-content">
+                            <h4>Agents That Act on Connected Data</h4>
+                            <p>Build an agent that uses the graph to decide and act. It could investigate fraud, triage security findings, or work through a codebase.</p>
+                            <div class="track-focus"><strong>Key focus:</strong></div>
+                            <ul class="track-list">
+                                <li>Multi-hop reasoning</li>
+                                <li>Graph queries and algorithms as agent tools</li>
+                                <li>Tool selection through MCP</li>
+                                <li>Actions based on what the graph shows</li>
+                                <li>Explainable results</li>
+                            </ul>
+                        </div>
                     </div>
+
+                    <!-- Track 02 -->
                     <div class="track-item">
-                        <span class="track-badge track-2">Track 02</span>
-                        <p><strong>Agent Memory &amp; Coordination</strong> — Episodic, semantic, and procedural memory stored as graph nodes: conversations, decisions, and learned facts persist across sessions in the in-graph AgentMemory.</p>
+                        <span class="track-badge track-2">🧠 Track 02</span>
+                        <div class="track-content">
+                            <h4>Agent Memory and Coordination</h4>
+                            <p>Build agents that remember across sessions and share state with each other. Memory should persist, update over time, and be available to every agent that needs it.</p>
+                            <div class="track-focus"><strong>Key focus:</strong></div>
+                            <ul class="track-list">
+                                <li>Episodic, semantic, and procedural memory</li>
+                                <li>Persistent conversation history</li>
+                                <li>Shared state and handoffs between agents</li>
+                                <li>High-concurrency reads and writes</li>
+                                <li>Separate memory per user or tenant</li>
+                            </ul>
+                        </div>
                     </div>
+
+                    <!-- Track 03 -->
                     <div class="track-item">
-                        <span class="track-badge track-3">Track 03</span>
-                        <p><strong>Company Brain</strong> — People, teams, projects, decisions, documents, systems, and skills — all unified as typed nodes in a connected knowledge graph (48 nodes, 58 edges).</p>
+                        <span class="track-badge track-3">🏢 Track 03</span>
+                        <div class="track-content">
+                            <h4>Company Brain</h4>
+                            <p>Build an agent that understands how a company works. Connect people, teams, projects, documents, and decisions in one graph, so the agent can answer questions and get work done across all of it.</p>
+                            <div class="track-focus"><strong>Key focus:</strong></div>
+                            <ul class="track-list">
+                                <li>Knowledge from docs, tickets, and chats in one graph</li>
+                                <li>Who owns what, and who knows what</li>
+                                <li>Tracing decisions back to their source</li>
+                                <li>Keeping knowledge current as things change</li>
+                                <li>Answers with clear sources</li>
+                            </ul>
+                        </div>
                     </div>
+
                 </div>
                 <pre>graph/            - GraphContext ABC + InMemory/FalkorDB backends
 agent/            - GraphReasoner, AgentMemory, GraphExplainer
