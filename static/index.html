@@ -6,88 +6,175 @@
     <title>GraphHacks Agent</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0a0a0f;
-            color: #e0e0e0;
-            min-height: 100vh;
-            padding: 40px 20px;
-        }
-        .container { max-width: 800px; margin: 0 auto; }
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 16px;
-            background: linear-gradient(90deg, #00ff88, #00aaff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+        body { font-family: -apple-system, sans-serif; background: #0a0a0f; color: #e0e0e0; min-height: 100vh; padding: 40px 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { font-size: 2.5rem; margin-bottom: 8px; background: linear-gradient(90deg, #00ff88, #00aaff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .subtitle { color: #888; margin-bottom: 32px; font-size: 1.1rem; }
-        .feature {
-            background: #111;
-            border: 1px solid #222;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 16px;
-        }
-        .feature h3 { color: #00ff88; margin-bottom: 8px; }
-        code {
-            background: #1a1a2e;
-            padding: 2px 8px;
-            border-radius: 4px;
-            color: #00aaff;
-            font-size: 0.9rem;
-        }
-        pre {
-            background: #1a1a2e;
-            border-radius: 8px;
-            padding: 16px;
-            overflow-x: auto;
-            margin-top: 8px;
-            border: 1px solid #222;
-        }
-        a { color: #00aaff; text-decoration: none; }
-        a:hover { text-decoration: underline; }
-        .endpoints { display: grid; gap: 8px; }
+        .card { background: #111; border: 1px solid #222; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+        .card h3 { color: #00ff88; margin-bottom: 16px; font-size: 1.3rem; }
+        .stats { display: flex; gap: 16px; flex-wrap: wrap; }
+        .stat-box { flex: 1; min-width: 120px; text-align: center; padding: 16px; background: #1a1a2e; border-radius: 8px; border: 1px solid #222; }
+        .stat-box .num { font-size: 2rem; font-weight: 700; color: #00ff88; }
+        .stat-box .label { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .question-form { display: flex; gap: 12px; margin-bottom: 16px; }
+        .question-form input { flex: 1; padding: 12px 16px; background: #1a1a2e; border: 1px solid #333; border-radius: 8px; color: #e0e0e0; font-size: 0.95rem; outline: none; }
+        .btn { padding: 12px 24px; background: linear-gradient(90deg, #00ff88, #00aaff); color: #0a0a0f; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .answer-box { background: #1a1a2e; border: 1px solid #222; border-radius: 8px; padding: 20px; margin-top: 16px; display: none; }
+        .confidence-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-left: 8px; }
+        .confidence-high { background: #00ff8833; color: #00ff88; }
+        .confidence-med { background: #ffaa0033; color: #ffaa00; }
+        .confidence-low { background: #ff444433; color: #ff4444; }
+        .endpoints-grid { display: grid; gap: 8px; font-size: 0.9rem; }
+        .endpoint-line { display: flex; align-items: center; gap: 8px; }
+        .method { min-width: 70px; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-align: center; }
+        .method.get { background: #00aaff33; color: #00aaff; }
+        .method.post { background: #ff880033; color: #ff8800; }
+        pre { background: #1a1a2e; border-radius: 8px; padding: 16px; overflow-x: auto; margin: 12px 0; border: 1px solid #222; font-size: 0.85rem; }
+        a { color: #00aaff; }
+        .tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+        .tag { padding: 6px 14px; background: #1a1a2e; border: 1px solid #333; border-radius: 20px; font-size: 0.8rem; color: #aaa; cursor: pointer; }
+        .tag:hover { background: #222; color: #ccc; }
+        .path-desc { color: #888; margin-left: auto; font-size: 0.85rem; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>GraphHacks Agent</h1>
-        <p class="subtitle">Agent where the knowledge graph shapes what the agent does — built with FalkorDB.</p>
+<div class="container">
+    <h1>GraphHacks Agent</h1>
+    <p class="subtitle">An agent where the knowledge graph shapes what it does. Built with FastAPI + FalkorDB.</p>
 
-        <div class="feature">
-            <h3>📊 API Endpoints</h3>
-            <div class="endpoints">
-                <div><code>GET  /</code> — This page</div>
-                <div><code>GET  /api/status</code> — Backend info & graph snapshot</div>
-                <div><code>POST /api/ask</code> — Ask a question</div>
-                <div><code>POST /api/seed</code> — Seed the graph</div>
-                <div><code>GET  /api/memory/{user_id}</code> — Memory summary</div>
-                <div><code>GET  /docs</code> — OpenAPI auto-docs</div>
-            </div>
+    <!-- Live Graph Status -->
+    <div class="card">
+        <h3>Live Graph Status</h3>
+        <div class="stats">
+            <div class="stat-box"><div class="num" id="node-count">Loading...</div><div class="label">Nodes</div></div>
+            <div class="stat-box"><div class="num" id="edge-count">...</div><div class="label">Edges</div></div>
+            <div class="stat-box"><div class="num" id="backend">...</div><div class="label">Backend</div></div>
         </div>
+        <div style="margin-top:12px;font-size:0.85rem;color:#888;" id="stats-detail"></div>
+    </div>
 
-        <div class="feature">
-            <h3>🚀 Ask a Question</h3>
-            <pre>curl -X POST http://localhost:8000/api/ask \
-  -H "Content-Type: application/json" \
-  -d '{"question": "Who has worked on the FalkorDB system?"}'</pre>
+    <!-- Interactive Demo -->
+    <div class="card">
+        <h3>Ask the Agent a Question</h3>
+        <p style="color:#777;margin-bottom:16px;font-size:0.9rem;">Try: "Who has worked on the FalkorDB system?" or "What breaks if AuthService goes down?"</p>
+        <div class="question-form">
+            <input type="text" id="question-input" placeholder="Ask about people, systems, decisions, or skills..." autocomplete="off">
+            <button class="btn" id="ask-btn">Ask</button>
         </div>
-
-        <div class="feature">
-            <h3>🔧 Project Structure</h3>
-            <pre>graph/          — GraphContext ABC + InMemory/FalkorDB backends
-agent/           — GraphReasoner, AgentMemory, GraphExplainer
-main.py          — CLI entry point
-api.py           — FastAPI REST server
-mcp_server.py    — MCP server (stdio mode)</pre>
+        <div class="tags">
+            <div class="tag" onclick="setQ('Who has worked on the FalkorDB system?')">FalkorDB team?</div>
+            <div class="tag" onclick="setQ('What breaks if AuthService goes down?')">AuthService impact?</div>
+            <div class="tag" onclick="setQ('Who knows Python on the team?')">Python experts?</div>
         </div>
+        <div class="answer-box" id="answer-box"><div id="answer-content"></div></div>
+    </div>
 
-        <div class="feature">
-            <h3>🔗 Links</h3>
-            <p>GitHub: <a href="https://github.com/kunalGupta5780/GraphHacks">kunalGupta5780/GraphHacks</a></p>
-            <p>FastAPI Docs: <a href="/docs">/docs</a></p>
+    <!-- API Endpoints -->
+    <div class="card">
+        <h3>API Endpoints</h3>
+        <div class="endpoints-grid">
+            <div class="endpoint-line"><span class="method get">GET</span><span class="path">/</span><span class="path-desc">This page</span></div>
+            <div class="endpoint-line"><span class="method get">GET</span><span class="path">/api/status</span><span class="path-desc">Backend info</span></div>
+            <div class="endpoint-line"><span class="method post">POST</span><span class="path">/api/ask</span><span class="path-desc">Ask a question</span></div>
+            <div class="endpoint-line"><span class="method post">POST</span><span class="path">/api/seed</span><span class="path-desc">Seed graph</span></div>
+            <div class="endpoint-line"><span class="method get">GET</span><span class="path">/docs</span><span class="path-desc">OpenAPI docs</span></div>
         </div>
     </div>
+
+    <!-- Three Tracks -->
+    <div class="card">
+        <h3>Three Hackathon Tracks</h3>
+        <pre>Track 01 - Agents on Connected Data: Multi-hop reasoning through the graph
+Track 02 - Agent Memory & Coordination: Episodic, semantic, procedural memory in-graph
+Track 03 - Company Brain: People, teams, projects, decisions unified</pre>
+        <pre>graph/          - GraphContext ABC + InMemory/FalkorDB backends
+agent/           - GraphReasoner, AgentMemory, GraphExplainer
+main.py          - CLI entry point
+api.py           - FastAPI REST server
+mcp_server.py    - MCP server (stdio mode)</pre>
+    </div>
+
+    <!-- Footer -->
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+            <div>GitHub: <a href="https://github.com/kunalGupta5780/GraphHacks" target="_blank">kunalGupta5780/GraphHacks</a></div>
+            <div>API Docs: <a href="/docs" target="_blank">/docs</a></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Fetch graph status on load
+async function fetchStatus() {
+    try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+        const snap = data.snapshot || data;
+        document.getElementById('node-count').textContent = snap.node_count || snap.nodes || '-';
+        document.getElementById('edge-count').textContent = snap.edge_count || snap.edges || '-';
+        const backend = data.backend || snap.backend_name || 'in-memory';
+        document.getElementById('backend').textContent = backend;
+        document.getElementById('stats-detail').textContent = '';
+    } catch (e) {
+        document.getElementById('node-count').textContent = '0';
+        document.getElementById('edge-count').textContent = '0';
+        document.getElementById('backend').textContent = 'Starting...';
+        document.getElementById('stats-detail').textContent = 'Waiting for server...';
+    }
+}
+fetchStatus();
+setInterval(fetchStatus, 5000);
+
+// Set question input
+function setQ(q) {
+    document.getElementById('question-input').value = q;
+}
+
+// Ask button handler
+document.getElementById('ask-btn').addEventListener('click', async () => {
+    const input = document.getElementById('question-input');
+    const question = input.value.trim();
+    if (!question) return;
+    const btn = document.getElementById('ask-btn');
+    btn.disabled = true;
+    btn.textContent = 'Thinking...';
+    const box = document.getElementById('answer-box');
+    const content = document.getElementById('answer-content');
+    content.innerHTML = '<p style="color:#888;">Analyzing graph...</p>';
+    box.style.display = 'block';
+    try {
+        const res = await fetch('/api/ask', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question })
+        });
+        const data = await res.json();
+        let html = `<p style="margin-bottom:8px;">${data.answer || data.response || 'No answer returned'}</p>`;
+        let conf = (data.confidence || data.confidence_score || 0.5);
+        if (conf <= 1) conf = conf * 100;
+        let confStr = Math.round(conf);
+        let cls = 'confidence-high';
+        if (confStr < 40) cls = 'confidence-low';
+        else if (confStr < 70) cls = 'confidence-med';
+        html += `<span class="confidence-badge ${cls}">Confidence: ${confStr}%</span>`;
+        if (data.confidence_reason) html += `<div style="font-size:0.8rem;color:#666;margin-top:4px;">${data.confidence_reason}</div>`;
+        if (data.explanation) html += `<pre style="margin-top:12px;max-height:200px;overflow:auto;">${data.explanation}</pre>`;
+        if (data.raw_results && data.raw_results.length) html += `<pre style="margin-top:8px;max-height:150px;overflow:auto;">Paths found:
+${JSON.stringify(data.raw_results, null, 2).substring(0, 1500)}</pre>`;
+        content.innerHTML = html;
+    } catch (e) {
+        content.innerHTML = '<p style="color:#ff4444;">Error: Could not reach the server. Make sure api.py is running.</p>';
+    }
+    btn.disabled = false;
+    btn.textContent = 'Ask';
+});
+
+// Allow pressing Enter in the input
+document.getElementById('question-input').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') document.getElementById('ask-btn').click();
+});
+</script>
+
 </body>
 </html>
