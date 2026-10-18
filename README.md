@@ -214,16 +214,6 @@ CALL algo.connectedComponents()
 YIELD nodeId, component RETURN nodeId, component
 ```
 
-## Demo Video
-
-[![Watch the demo](https://img.youtube.com/vi/demo-thumbnail/0.jpg)](https://youtu.be/demo-link)
-
-A 2-minute walkthrough of the live dashboard:
-- Interactive graph visualization in the browser
-- Live question answering with confidence scores
-- Node inspection and property viewing
-- Real-time graph statistics and label breakdowns
-
 ## Track
 
 **Entering: Tracks 01, 02, and 03** — this project addresses all three hackathon tracks:
