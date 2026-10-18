@@ -108,6 +108,135 @@ The agent answers questions by traversing paths in the graph. Every answer inclu
 
 The reasoner traverses: `Person → WORKS_ON → Project → USES → System("FalkorDB")` and finds 4 people who worked on projects using FalkorDB.
 
+## Graph Data Model
+
+The knowledge graph contains **11 node types** and **20 relationship types**, seeded with realistic company data (48 nodes, 58 edges).
+
+### Node Types
+
+| Node Type | Properties | Description |
+|-----------|------------|-------------|
+| `Person` | `name`, `role`, `team`, `email`, `skills`, `hire_date` | Team members |
+| `Team` | `name`, `description` | Organizational teams |
+| `Project` | `name`, `description`, `status`, `start_date`, `end_date` | Work initiatives |
+| `System` | `name`, `type`, `criticality`, `owner`, `description` | Infrastructure/services |
+| `Document` | `title`, `type`, `summary`, `created_by`, `created_date`, `url`, `content` | ADRs, specs, docs |
+| `Decision` | `title`, `rationale`, `date`, `status`, `outcome` | Architectural decisions |
+| `Meeting` | `title`, `date`, `agenda`, `notes` | Meetings and retros |
+| `Ticket` | `title`, `description`, `status`, `priority`, `assignee`, `created_date` | Jira tickets |
+| `Skill` | `name`, `category` | Technical skills |
+| `Concept` | `name`, `description`, `confidence`, `source` | Learned concepts from conversations |
+| `Conversation` / `Memory` | `content`, `speaker`, `timestamp`, `session_id`, `tags`, `confidence`, `source_query` | Agent memory layers |
+
+### Relationship Types
+
+| Relationship | Direction | Meaning |
+|--------------|-----------|---------|
+| `WORKS_ON` | Person → Project | Person works on a project |
+| `MEMBER_OF` | Person → Team | Person belongs to a team |
+| `HAS_SKILL` | Person → Skill | Person has a skill |
+| `KNOWN_FOR` | Person → Concept | Person is known for a concept |
+| `RAISED` | Person → Ticket | Person raised a ticket |
+| `RESOLVED` | Person → Ticket | Person resolved a ticket |
+| `OWNS` | Person → System | Person owns a system |
+| `ATTENDED` | Person → Meeting | Person attended a meeting |
+| `ASKED` | Person → Conversation | Person asked a question |
+| `LEARNED` | Person → Memory | Person learned something |
+| `USES` | Project → System | Project uses a system |
+| `DEPENDS_ON` | System → System | System depends on another |
+| `HAS_DOCUMENT` | Project/System → Document | Associated documentation |
+| `HAS_DECISION` | Project → Decision | Decision belonging to project |
+| `HAS_TICKET` | Project → Ticket | Tickets for a project |
+| `HAS_MEETING` | Project → Meeting | Meetings for a project |
+| `BASED_ON` | Decision → Document | Decision based on a document |
+| `MADE_IN` | Decision → Meeting | Decision made in a meeting |
+| `TRACKS` | Ticket → Decision | Ticket tracking a decision |
+| `RELATED_TO` | Person ↔ Person / Concept ↔ Concept | General relationships |
+
+## Key Cypher Queries
+
+The agent traverses the graph using these core query patterns:
+
+### 1. Multi-hop Reasoning (Person → Project → System)
+```cypher
+MATCH (p:Person)-[:WORKS_ON]->(proj:Project)-[:USES]->(s:System {name: 'FalkorDB'})
+RETURN p.name AS person, count(*) AS projects ORDER BY projects DESC
+```
+
+### 2. Impact Analysis (Reverse Dependency)
+```cypher
+MATCH (dep)-[:DEPENDS_ON]->(s:System {name: 'FalkorDB'})
+RETURN dep.name AS dependent, labels(dep) AS dep_type
+```
+
+### 3. Decision Trace (Decision → Document + Meeting)
+```cypher
+MATCH (d:Decision {title: 'topic'})-[:BASED_ON]->(doc:Document) RETURN doc
+```
+```cypher
+MATCH (d:Decision {title: 'topic'})-[:MADE_IN]->(m:Meeting) RETURN m
+```
+
+### 4. Shortest Path Between Systems
+```cypher
+MATCH p=shortestPath((:System {name: 'AuthService'})-[:DEPENDS_ON*..10]-(n:System))
+RETURN p
+```
+
+### 5. Who Knows a Skill
+```cypher
+MATCH (p:Person)-[:HAS_SKILL]->(s:Skill {name: 'Python'})
+RETURN p.name AS name, p.role AS role, p.team AS team
+```
+
+### 6. Conversation Search
+```cypher
+MATCH (c:Conversation)
+WHERE c.speaker CONTAINS 'name'
+RETURN c.content, c.timestamp ORDER BY c.timestamp DESC LIMIT 10
+```
+
+### 7. General Keyword Search
+```cypher
+MATCH (n)
+WHERE toLower(n.name) CONTAINS toLower('keyword')
+   OR toLower(n.title) CONTAINS toLower('keyword')
+RETURN n.name AS name, labels(n) AS labels
+```
+
+### 8. Graph Algorithms
+```cypher
+CALL algo.pageRank('Person', 'WORKS_ON', {topN: 5})
+YIELD nodeId, score RETURN nodeId, score
+```
+```cypher
+CALL algo.connectedComponents()
+YIELD nodeId, component RETURN nodeId, component
+```
+
+## Demo Video
+
+[![Watch the demo](https://img.youtube.com/vi/demo-thumbnail/0.jpg)](https://youtu.be/demo-link)
+
+A 2-minute walkthrough of the live dashboard:
+- Interactive graph visualization in the browser
+- Live question answering with confidence scores
+- Node inspection and property viewing
+- Real-time graph statistics and label breakdowns
+
+## Track
+
+**Entering: Track 01 — Agents That Act on Connected Data**
+
+This project directly addresses Track 01's key focus areas:
+- ✅ **Multi-hop reasoning** — GraphReasoner orchestrates multi-hop traversals (Person → Project → System → Document)
+- ✅ **Graph queries and algorithms as agent tools** — Cypher queries + PageRank + shortestPath + connected components
+- ✅ **Tool selection through MCP** — `mcp_server.py` exposes 8 graph tools for any MCP-compatible client
+- ✅ **Actions based on what the graph shows** — Every answer produces confidence scores, reasoning steps, and path traces back to source nodes
+- ✅ **Explainable results** — GraphExplainer formats results with step-by-step reasoning chains and evidence
+
+**Also relevant to Track 02** (Agent Memory) — the 3-layer graph-based memory (episodic/semantic/procedural) persists conversations and concepts in graph nodes, and **Track 03** (Company Brain) — the full company data model connects people, teams, projects, systems, documents, tickets, and decisions.
+
 ## Project Structure
 
 ```
