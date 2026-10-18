@@ -195,6 +195,36 @@ class InMemoryContext(GraphContext):
             "label_counts": counts,
         }
 
+    def get_graph_data(self) -> dict[str, Any]:
+        """Return all nodes and edges for visualisation."""
+        nodes = []
+        for nid, data in self._graph.nodes(data=True):
+            labels = data.get("labels", [])
+            props = data.get("props", {})
+            name = props.get("name", props.get("title", nid))
+            nodes.append({
+                "id": nid,
+                "label": name,
+                "title": name,
+                "labels": labels,
+                "properties": props,
+            })
+
+        edges = []
+        for src, tgt, _key, data in self._graph.edges(data=True, keys=True):
+            rel_type = data.get("rel_type", "")
+            edges.append({
+                "from": src,
+                "to": tgt,
+                "type": rel_type,
+                "label": rel_type,
+                "title": rel_type,
+                "arrows": "to",
+                "properties": data.get("props", {}),
+            })
+
+        return {"nodes": nodes, "edges": edges, "snapshot": self.save_snapshot()}
+
     def execute(self, query: str, params: Optional[dict] = None) -> GraphResult:
         """Execute a Cypher-like query (pragmatic subset)."""
         params = params or {}

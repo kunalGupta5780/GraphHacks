@@ -104,6 +104,12 @@ def graph_snapshot():
     return ctx.save_snapshot()
 
 
+@app.get("/api/graph_data")
+def graph_data():
+    ctx, _, _, _ = _init()
+    return ctx.get_graph_data()
+
+
 @app.get("/api/memory/{user_id}")
 def memory_summary(user_id: str = "default"):
     ctx, memory, _, _ = _init()

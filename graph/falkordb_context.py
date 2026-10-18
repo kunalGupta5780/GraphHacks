@@ -170,6 +170,40 @@ class FalkorDBContext(GraphContext):
             "edge_count": int(edge_count),
         }
 
+    def get_graph_data(self) -> dict[str, Any]:
+        """Return all nodes and edges for visualisation."""
+        result = self._client.query("MATCH (n) RETURN n")
+        nodes = []
+        for row in result.result_set:
+            n = self._row_to_node(row[0])
+            if n:
+                name = n.properties.get("name", n.properties.get("title", n.id))
+                nodes.append({
+                    "id": n.id,
+                    "label": name,
+                    "title": name,
+                    "labels": n.labels,
+                    "properties": n.properties,
+                })
+
+        edges = []
+        edge_result = self._client.query(
+            "MATCH (a)-[r]->(b) RETURN id(a) AS src, type(r) AS rtype, "
+            "properties(r) AS props, id(b) AS tgt"
+        )
+        for row in edge_result.result_set:
+            edges.append({
+                "from": str(row[0]),
+                "to": str(row[3]),
+                "type": row[1],
+                "label": row[1],
+                "title": row[1],
+                "arrows": "to",
+                "properties": row[2] or {},
+            })
+
+        return {"nodes": nodes, "edges": edges, "snapshot": self.save_snapshot()}
+
     def execute(self, query: str, params: Optional[dict] = None) -> GraphResult:
         params = params or {}
         result = self._client.query(query, params)

@@ -1,111 +1,314 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang='en'>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
     <title>GraphHacks Agent</title>
+    <script src='https://cdn.jsdelivr.net/npm/vis-network@10.1.1/standalone/umd/vis-network.min.js'></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, sans-serif; background: #0a0a0f; color: #e0e0e0; min-height: 100vh; padding: 40px 20px; }
-        .container { max-width: 900px; margin: 0 auto; }
-        h1 { font-size: 2.5rem; margin-bottom: 8px; background: linear-gradient(90deg, #00ff88, #00aaff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .subtitle { color: #888; margin-bottom: 32px; font-size: 1.1rem; }
-        .card { background: #111; border: 1px solid #222; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
-        .card h3 { color: #00ff88; margin-bottom: 16px; font-size: 1.3rem; }
-        .stats { display: flex; gap: 16px; flex-wrap: wrap; }
-        .stat-box { flex: 1; min-width: 120px; text-align: center; padding: 16px; background: #1a1a2e; border-radius: 8px; border: 1px solid #222; }
-        .stat-box .num { font-size: 2rem; font-weight: 700; color: #00ff88; }
-        .stat-box .label { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
-        .question-form { display: flex; gap: 12px; margin-bottom: 16px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #0a0a0f; color: #e0e0e0; min-height: 100vh; overflow-x: hidden; }
+        .header { background: linear-gradient(135deg, #0a0a0f 0%, #111 100%); border-bottom: 1px solid #222; padding: 20px 40px; }
+        .header h1 { font-size: 1.8rem; background: linear-gradient(90deg, #00ff88, #00aaff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; }
+        .header p { color: #888; font-size: 0.95rem; margin-top: 4px; }
+        .dashboard { display: grid; grid-template-columns: 320px 1fr; gap: 24px; padding: 32px 40px; max-width: 1600px; margin: 0 auto; }
+        .sidebar { display: flex; flex-direction: column; gap: 20px; }
+        .main-content { display: flex; flex-direction: column; gap: 20px; }
+        .card { background: #111; border: 1px solid #222; border-radius: 14px; padding: 22px; }
+        .card h3 { color: #00ff88; margin-bottom: 14px; font-size: 1.1rem; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .stat-box { padding: 14px; background: #1a1a2e; border-radius: 8px; border: 1px solid #222; text-align: center; }
+        .stat-box .num { font-size: 1.6rem; font-weight: 700; color: #00ff88; }
+        .stat-box .label { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+        #graph-container { width: 100%; height: 520px; background: #1a1a2e; border: 1px solid #222; border-radius: 8px; }
+        .node-legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; font-size: 0.8rem; }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .search-box { position: relative; margin-bottom: 12px; }
+        .search-box input { width: 100%; padding: 8px 32px; background: #1a1a2e; border: 1px solid #333; border-radius: 6px; color: #e0e0e0; font-size: 0.85rem; outline: none; }
+        .search-box input:focus { border-color: #00aaff; }
+        .search-box svg { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; fill: #888; }
+        .question-form { display: flex; gap: 10px; margin-bottom: 12px; }
         .question-form input { flex: 1; padding: 12px 16px; background: #1a1a2e; border: 1px solid #333; border-radius: 8px; color: #e0e0e0; font-size: 0.95rem; outline: none; }
-        .btn { padding: 12px 24px; background: linear-gradient(90deg, #00ff88, #00aaff); color: #0a0a0f; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .answer-box { background: #1a1a2e; border: 1px solid #222; border-radius: 8px; padding: 20px; margin-top: 16px; display: none; }
+        .question-form input:focus { border-color: #00aaff; }
+        .btn { padding: 12px 28px; background: linear-gradient(90deg, #00ff88, #00aaff); color: #0a0a0f; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; transition: transform 0.1s; }
+        .btn:hover { transform: scale(1.03); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+        .tag { padding: 6px 14px; background: #1a1a2e; border: 1px solid #333; border-radius: 20px; font-size: 0.8rem; color: #aaa; cursor: pointer; }
+        .tag:hover { background: #222; color: #ccc; }
+        .answer-box { background: #1a1a2e; border: 1px solid #222; border-radius: 10px; padding: 18px; margin-top: 16px; display: none; }
         .confidence-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-left: 8px; }
         .confidence-high { background: #00ff8833; color: #00ff88; }
         .confidence-med { background: #ffaa0033; color: #ffaa00; }
         .confidence-low { background: #ff444433; color: #ff4444; }
-        .endpoints-grid { display: grid; gap: 8px; font-size: 0.9rem; }
-        .endpoint-line { display: flex; align-items: center; gap: 8px; }
-        .method { min-width: 70px; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-align: center; }
+        .endpoints { font-size: 0.9rem; }
+        .endpoint-line { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+        .method { min-width: 60px; padding: 3px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-align: center; }
         .method.get { background: #00aaff33; color: #00aaff; }
         .method.post { background: #ff880033; color: #ff8800; }
-        pre { background: #1a1a2e; border-radius: 8px; padding: 16px; overflow-x: auto; margin: 12px 0; border: 1px solid #222; font-size: 0.85rem; }
         a { color: #00aaff; }
-        .tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-        .tag { padding: 6px 14px; background: #1a1a2e; border: 1px solid #333; border-radius: 20px; font-size: 0.8rem; color: #aaa; cursor: pointer; }
-        .tag:hover { background: #222; color: #ccc; }
-        .path-desc { color: #888; margin-left: auto; font-size: 0.85rem; }
-    </style>
+        .track { display: flex; flex-direction: column; gap: 14px; }
+        .track-item { display: flex; gap: 12px; }
+        .track-badge { min-width: 70px; padding: 3px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-align: center; }
+        .track-1 { background: #00aaff33; color: #00aaff; }
+        .track-2 { background: #ff880033; color: #ff8800; }
+        .track-3 { background: #aa00ff33; color: #aa00ff; }
+        .track p { color: #888; font-size: 0.88rem; flex: 1; }
+        pre { background: #1a1a2e; border-radius: 8px; padding: 14px; overflow-x: auto; margin: 12px 0; border: 1px solid #222; font-size: 0.82rem; }
+        #node-detail { font-size: 0.82rem; }
+        #node-detail .detail-row { margin-bottom: 6px; }
+        #node-detail .detail-label { color: #888; display: inline-block; min-width: 80px; }
+        #node-detail .detail-value { color: #ccc; }
+        .footer-card { text-align: center; font-size: 0.85rem; color: #888; }
+        .footer-card a { color: #00aaff; }
+        </style>
 </head>
 <body>
-<div class="container">
-    <h1>GraphHacks Agent</h1>
-    <p class="subtitle">An agent where the knowledge graph shapes what it does. Built with FastAPI + FalkorDB.</p>
-
-    <!-- Live Graph Status -->
-    <div class="card">
-        <h3>Live Graph Status</h3>
-        <div class="stats">
-            <div class="stat-box"><div class="num" id="node-count">Loading...</div><div class="label">Nodes</div></div>
-            <div class="stat-box"><div class="num" id="edge-count">...</div><div class="label">Edges</div></div>
-            <div class="stat-box"><div class="num" id="backend">...</div><div class="label">Backend</div></div>
-        </div>
-        <div style="margin-top:12px;font-size:0.85rem;color:#888;" id="stats-detail"></div>
+    <div class="header">
+        <h1>GraphHacks Agent</h1>
+        <p>An agent where the knowledge graph shapes what it does. Built with FastAPI + FalkorDB.</p>
     </div>
+    <div class="dashboard">
 
-    <!-- Interactive Demo -->
-    <div class="card">
-        <h3>Ask the Agent a Question</h3>
-        <p style="color:#777;margin-bottom:16px;font-size:0.9rem;">Try: "Who has worked on the FalkorDB system?" or "What breaks if AuthService goes down?"</p>
-        <div class="question-form">
-            <input type="text" id="question-input" placeholder="Ask about people, systems, decisions, or skills..." autocomplete="off">
-            <button class="btn" id="ask-btn">Ask</button>
-        </div>
-        <div class="tags">
-            <div class="tag" onclick="setQ('Who has worked on the FalkorDB system?')">FalkorDB team?</div>
-            <div class="tag" onclick="setQ('What breaks if AuthService goes down?')">AuthService impact?</div>
-            <div class="tag" onclick="setQ('Who knows Python on the team?')">Python experts?</div>
-        </div>
-        <div class="answer-box" id="answer-box"><div id="answer-content"></div></div>
-    </div>
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Live Graph Status -->
+            <div class="card">
+                <h3>Live Graph Status</h3>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="num" id="node-count">Loading...</div>
+                        <div class="label">Nodes</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="num" id="edge-count">Loading...</div>
+                        <div class="label">Edges</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="num" id="backend">Starting...</div>
+                        <div class="label">Backend</div>
+                    </div>
+                </div>
+                <div id="label-breakdown" style="margin-top:10px;font-size:0.75rem;color:#888;"></div>
+            </div>
 
-    <!-- API Endpoints -->
-    <div class="card">
-        <h3>API Endpoints</h3>
-        <div class="endpoints-grid">
-            <div class="endpoint-line"><span class="method get">GET</span><span class="path">/</span><span class="path-desc">This page</span></div>
-            <div class="endpoint-line"><span class="method get">GET</span><span class="path">/api/status</span><span class="path-desc">Backend info</span></div>
-            <div class="endpoint-line"><span class="method post">POST</span><span class="path">/api/ask</span><span class="path-desc">Ask a question</span></div>
-            <div class="endpoint-line"><span class="method post">POST</span><span class="path">/api/seed</span><span class="path-desc">Seed graph</span></div>
-            <div class="endpoint-line"><span class="method get">GET</span><span class="path">/docs</span><span class="path-desc">OpenAPI docs</span></div>
-        </div>
-    </div>
+            <!-- Node Detail Panel -->
+            <div class="card">
+                <h3>Node Details</h3>
+                <div id="node-detail" style="display:none;">
+                    <div class="detail-row"><span class="detail-label">ID:</span><span class="detail-value" id="node-id"></span></div>
+                    <div class="detail-row"><span class="detail-label">Labels:</span><span class="detail-value" id="node-labels"></span></div>
+                    <div class="detail-row"><span class="detail-label">Properties:</span></div>
+                    <pre id="node-props" style="max-height:150px;font-size:0.75rem;"></pre>
+                </div>
+                <p id="node-placeholder" style="color:#888;font-size:0.85rem;margin:0;">Click a node in the graph to see its details here.</p>
+            </div>
 
-    <!-- Three Tracks -->
-    <div class="card">
-        <h3>Three Hackathon Tracks</h3>
-        <pre>Track 01 - Agents on Connected Data: Multi-hop reasoning through the graph
-Track 02 - Agent Memory & Coordination: Episodic, semantic, procedural memory in-graph
-Track 03 - Company Brain: People, teams, projects, decisions unified</pre>
-        <pre>graph/          - GraphContext ABC + InMemory/FalkorDB backends
-agent/           - GraphReasoner, AgentMemory, GraphExplainer
-main.py          - CLI entry point
-api.py           - FastAPI REST server
-mcp_server.py    - MCP server (stdio mode)</pre>
-    </div>
+            <!-- Quick Questions -->
+            <div class="card">
+                <h3>Quick Questions</h3>
+                <p style="color:#888;font-size:0.85rem;margin-bottom:12px;">Try asking about people, systems, decisions, or skills:</p>
+                <div class="tags">
+                    <span class="tag" onclick="setQ('Who has worked on the FalkorDB system?')">FalkorDB team?</span>
+                    <span class="tag" onclick="setQ('What breaks if AuthService goes down?')">AuthService impact?</span>
+                    <span class="tag" onclick="setQ('Who are the Python experts?')">Python experts?</span>
+                    <span class="tag" onclick="setQ('What are the active projects?')">Active projects?</span>
+                </div>
+            </div>
 
-    <!-- Footer -->
-    <div class="card">
-        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;">
-            <div>GitHub: <a href="https://github.com/kunalGupta5780/GraphHacks" target="_blank">kunalGupta5780/GraphHacks</a></div>
-            <div>API Docs: <a href="/docs" target="_blank">/docs</a></div>
+            <!-- API Endpoints -->
+            <div class="card">
+                <h3>API Endpoints</h3>
+                <div class="endpoints">
+                    <div class="endpoint-line"><span class="method get">GET</span><span><strong>/</strong> This page</span></div>
+                    <div class="endpoint-line"><span class="method get">GET</span><span><strong>/api/status</strong> Backend info</span></div>
+                    <div class="endpoint-line"><span class="method get">GET</span><span><strong>/api/graph_data</strong> Graph nodes + edges</span></div>
+                    <div class="endpoint-line"><span class="method post">POST</span><span><strong>/api/ask</strong> Ask a question</span></div>
+                    <div class="endpoint-line"><span class="method post">POST</span><span><strong>/api/seed</strong> Re-seed graph</span></div>
+                    <div class="endpoint-line"><span class="method get">GET</span><span><strong>/docs</strong> OpenAPI docs</span></div>
+                    <div class="endpoint-line"><span class="method get">GET</span><span><strong>/api/memory/default</strong> Memory summary</span></div>
+                </div>
+            </div>
         </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Knowledge Graph Visualization -->
+            <div class="card">
+                <h3>Knowledge Graph Visualization</h3>
+                <div class="search-box">
+                    <svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="2" fill="none"/><line x1="15" y1="15" x2="21" y2="21" stroke="currentColor" stroke-width="2"/></svg>
+                    <input type="text" id="graph-search" placeholder="Search nodes by name..." autocomplete="off">
+                </div>
+                <div id="graph-container"></div>
+                <div class="node-legend" id="node-legend"></div>
+            </div>
+
+            <!-- Ask Section -->
+            <div class="card">
+                <h3>Ask the Agent a Question</h3>
+                <div class="question-form">
+                    <input type="text" id="question-input" placeholder="Ask about people, systems, decisions, or skills..." autocomplete="off">
+                    <button class="btn" id="ask-btn">Ask</button>
+                </div>
+                <div class="tags">
+                    <span class="tag" onclick="setQ('Who has worked on the FalkorDB system?')">FalkorDB team?</span>
+                    <span class="tag" onclick="setQ('What breaks if AuthService goes down?')">AuthService impact?</span>
+                    <span class="tag" onclick="setQ('Who are the Python experts?')">Python experts?</span>
+                </div>
+                <div class="answer-box" id="answer-box">
+                    <div id="answer-content"></div>
+                </div>
+            </div>
+
+            <!-- Three Tracks -->
+            <div class="card">
+                <h3>Three Hackathon Tracks</h3>
+                <div class="track">
+                    <div class="track-item">
+                        <span class="track-badge track-1">Track 01</span>
+                        <p><strong>Agents on Connected Data</strong> — Multi-hop reasoning through the graph: trace paths from Person → Project → System → Document in a single query. Built on the GraphReasoner with shortest-path and neighbor traversal.</p>
+                    </div>
+                    <div class="track-item">
+                        <span class="track-badge track-2">Track 02</span>
+                        <p><strong>Agent Memory &amp; Coordination</strong> — Episodic, semantic, and procedural memory stored as graph nodes: conversations, decisions, and learned facts persist across sessions in the in-graph AgentMemory.</p>
+                    </div>
+                    <div class="track-item">
+                        <span class="track-badge track-3">Track 03</span>
+                        <p><strong>Company Brain</strong> — People, teams, projects, decisions, documents, systems, and skills — all unified as typed nodes in a connected knowledge graph (48 nodes, 58 edges).</p>
+                    </div>
+                </div>
+                <pre>graph/            - GraphContext ABC + InMemory/FalkorDB backends
+agent/            - GraphReasoner, AgentMemory, GraphExplainer
+main.py           - CLI entry point
+api.py            - FastAPI REST server
+mcp_server.py     - MCP server (stdio mode)</pre>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer-card">
+                <div>GitHub: <a href="https://github.com/kunalGupta5780/GraphHacks" target="_blank">kunalGupta5780/GraphHacks</a></div>
+                <div>API Docs: <a href="/docs" target="_blank">/docs</a></div>
+            </div>
+        </div>
+        <!-- Close dashboard -->
     </div>
-</div>
 
 <script>
-// Fetch graph status on load
+let network = null;
+let graphData = { nodes: [], edges: [] };
+
+const NODE_COLORS = {
+    Person: '#00aaff', Team: '#00ff88', Project: '#ff8800', System: '#ff4466',
+    Skill: '#aa00ff', Document: '#00cccc', Decision: '#ffaa00', Meeting: '#cccc00',
+    Ticket: '#8888ff', Concept: '#ff66aa', Conversation: '#44aa88', Memory: '#66aaff',
+};
+
+function colorForLabel(label) {
+    return NODE_COLORS[label] || '#888888';
+}
+
+async function fetchGraphData() {
+    try {
+        const res = await fetch('/api/graph_data');
+        const data = await res.json();
+        graphData = {
+            nodes: new vis.DataSet(data.nodes.map(n => {
+                const firstLabel = (n.labels || [''])[0];
+                const color = colorForLabel(firstLabel);
+                return {
+                    id: n.id,
+                    label: n.label,
+                    title: n.properties && n.properties.name ? n.properties.name : n.label,
+                    _labels: n.labels || [],
+                    _props: n.properties || {},
+                    color: { background: color, border: color },
+                    font: { color: '#fff', size: 12 },
+                    shape: 'dot',
+                    size: 22,
+                };
+            })),
+            edges: new vis.DataSet(data.edges.map(e => ({
+                from: e.from, to: e.to,
+                label: e.type, title: e.type, arrows: 'to',
+                color: { color: '#444', highlight: '#00aaff' },
+                font: { color: '#888', size: 10 },
+            }))),
+        };
+        renderGraph();
+        renderLegend(data.nodes);
+    } catch (e) {
+        console.error('Failed to load graph data:', e);
+    }
+}
+
+function renderGraph() {
+    if (network) { network.setData(graphData); return; }
+    const container = document.getElementById('graph-container');
+    const options = {
+        physics: { stabilization: { iterations: 100 }, barnesHut: { gravitationalConstant: -8000, centralGravity: 0.3, springLength: 95 }, minVelocity: 0.75 },
+        nodes: { shape: 'dot', size: 22 },
+        edges: { width: 1.5, color: { inherit: true }, arrows: 'to', font: { align: 'middle' } },
+        layout: { hierarchical: false },
+        interaction: { navigationButtons: true, zoomSpeed: 0.8, hover: true },
+        manipulation: { enabled: false },
+        tooltip: { delay: 300 },
+    };
+    network = new vis.Network(container, graphData, options);
+    network.on('click', function(params) {
+        if (params.nodes.length > 0) {
+            const node = graphData.nodes.get(params.nodes[0]);
+            if (node) showNodeDetail(node);
+        }
+    });
+}
+
+let nodeDetailVisible = false;
+function showNodeDetail(node) {
+    const placeholder = document.getElementById('node-placeholder');
+    const detail = document.getElementById('node-detail');
+    if (!nodeDetailVisible) {
+        placeholder.style.display = 'none';
+        detail.style.display = 'block';
+        nodeDetailVisible = true;
+    }
+    document.getElementById('node-id').textContent = node.id;
+    document.getElementById('node-labels').textContent = (node._labels || []).join(', ');
+    const props = node._props || {};
+    const filtered = {};
+    for (const [k, v] of Object.entries(props)) {
+        if (!k.startsWith('_')) filtered[k] = v;
+    }
+    document.getElementById('node-props').textContent = JSON.stringify(filtered, null, 2);
+}
+
+function renderLegend(nodes) {
+    const labelCounts = {};
+    nodes.forEach(n => {
+        (n.labels || []).forEach(label => {
+            labelCounts[label] = (labelCounts[label] || 0) + 1;
+        });
+    });
+    const legendEl = document.getElementById('node-legend');
+    const items = [];
+    for (const label of Object.keys(labelCounts).sort()) {
+        const color = colorForLabel(label);
+        items.push('<div class="legend-item"><div class="legend-dot" style="background:' + color + ';border:2px solid ' + color + ';"></div> ' + label + ' (' + labelCounts[label] + ')</div>');
+    }
+    legendEl.innerHTML = items.join('');
+}
+
+document.getElementById('graph-search').addEventListener('input', function(e) {
+    const query = e.target.value.trim().toLowerCase();
+    const allIds = graphData.nodes.getIds();
+    allIds.forEach(id => {
+        const node = graphData.nodes.get(id);
+        const label = node.label ? node.label.toLowerCase() : '';
+        if (network) network.body.data.nodes.update({ id: node.id, hidden: !label.includes(query) });
+    });
+});
+
 async function fetchStatus() {
     try {
         const res = await fetch('/api/status');
@@ -113,25 +316,24 @@ async function fetchStatus() {
         const snap = data.snapshot || data;
         document.getElementById('node-count').textContent = snap.node_count || snap.nodes || '-';
         document.getElementById('edge-count').textContent = snap.edge_count || snap.edges || '-';
-        const backend = data.backend || snap.backend_name || 'in-memory';
-        document.getElementById('backend').textContent = backend;
-        document.getElementById('stats-detail').textContent = '';
+        document.getElementById('backend').textContent = data.backend || snap.backend_name || 'in-memory';
+        const counts = snap.label_counts || {};
+        document.getElementById('label-breakdown').textContent = Object.entries(counts).map(([k, v]) => k + ': ' + v).join(' | ');
     } catch (e) {
         document.getElementById('node-count').textContent = '0';
         document.getElementById('edge-count').textContent = '0';
         document.getElementById('backend').textContent = 'Starting...';
-        document.getElementById('stats-detail').textContent = 'Waiting for server...';
+        document.getElementById('label-breakdown').textContent = 'Waiting for server...';
     }
 }
+
 fetchStatus();
 setInterval(fetchStatus, 5000);
+fetchGraphData();
+setInterval(fetchGraphData, 30000);
 
-// Set question input
-function setQ(q) {
-    document.getElementById('question-input').value = q;
-}
+function setQ(q) { document.getElementById('question-input').value = q; }
 
-// Ask button handler
 document.getElementById('ask-btn').addEventListener('click', async () => {
     const input = document.getElementById('question-input');
     const question = input.value.trim();
@@ -144,37 +346,28 @@ document.getElementById('ask-btn').addEventListener('click', async () => {
     content.innerHTML = '<p style="color:#888;">Analyzing graph...</p>';
     box.style.display = 'block';
     try {
-        const res = await fetch('/api/ask', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ question })
-        });
+        const res = await fetch('/api/ask', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({question})});
         const data = await res.json();
-        let html = `<p style="margin-bottom:8px;">${data.answer || data.response || 'No answer returned'}</p>`;
+        let html = '<p style="margin-bottom:10px;">' + (data.answer || data.response || 'No answer returned') + '</p>';
         let conf = (data.confidence || data.confidence_score || 0.5);
         if (conf <= 1) conf = conf * 100;
         let confStr = Math.round(conf);
-        let cls = 'confidence-high';
-        if (confStr < 40) cls = 'confidence-low';
-        else if (confStr < 70) cls = 'confidence-med';
-        html += `<span class="confidence-badge ${cls}">Confidence: ${confStr}%</span>`;
-        if (data.confidence_reason) html += `<div style="font-size:0.8rem;color:#666;margin-top:4px;">${data.confidence_reason}</div>`;
-        if (data.explanation) html += `<pre style="margin-top:12px;max-height:200px;overflow:auto;">${data.explanation}</pre>`;
-        if (data.raw_results && data.raw_results.length) html += `<pre style="margin-top:8px;max-height:150px;overflow:auto;">Paths found:
-${JSON.stringify(data.raw_results, null, 2).substring(0, 1500)}</pre>`;
+        let cls = confStr > 70 ? 'confidence-high' : confStr > 40 ? 'confidence-med' : 'confidence-low';
+        html += '<span class="confidence-badge ' + cls + '">Confidence: ' + confStr + '%</span>';
+        if (data.confidence_reason) html += '<div style="font-size:0.8rem;color:#666;margin-top:4px;">' + data.confidence_reason + '</div>';
+        if (data.explanation) html += '<pre style="margin-top:12px;max-height:240px;overflow:auto;">' + data.explanation + '</pre>';
+        if (data.raw_results && data.raw_results.length) html += '<pre style="margin-top:8px;max-height:180px;overflow:auto;">Paths:\n' + JSON.stringify(data.raw_results, null, 2).substring(0, 2000) + '</pre>';
         content.innerHTML = html;
-    } catch (e) {
+    } catch(e) {
         content.innerHTML = '<p style="color:#ff4444;">Error: Could not reach the server. Make sure api.py is running.</p>';
     }
     btn.disabled = false;
     btn.textContent = 'Ask';
 });
 
-// Allow pressing Enter in the input
 document.getElementById('question-input').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') document.getElementById('ask-btn').click();
 });
 </script>
-
 </body>
 </html>

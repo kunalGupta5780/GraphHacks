@@ -210,6 +210,11 @@ class GraphContext(abc.ABC):
         """Serialise graph metadata (node + edge counts, etc.)."""
         ...
 
+    @abc.abstractmethod
+    def get_graph_data(self) -> dict[str, Any]:
+        """Return full graph data (nodes + edges) for visualisation."""
+        ...
+
     @property
     @abc.abstractmethod
     def backend_name(self) -> str:
