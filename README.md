@@ -226,16 +226,28 @@ A 2-minute walkthrough of the live dashboard:
 
 ## Track
 
-**Entering: Track 01 — Agents That Act on Connected Data**
+**Entering: Tracks 01, 02, and 03** — this project addresses all three hackathon tracks:
 
-This project directly addresses Track 01's key focus areas:
+### Track 01 — Agents That Act on Connected Data
 - ✅ **Multi-hop reasoning** — GraphReasoner orchestrates multi-hop traversals (Person → Project → System → Document)
 - ✅ **Graph queries and algorithms as agent tools** — Cypher queries + PageRank + shortestPath + connected components
 - ✅ **Tool selection through MCP** — `mcp_server.py` exposes 8 graph tools for any MCP-compatible client
 - ✅ **Actions based on what the graph shows** — Every answer produces confidence scores, reasoning steps, and path traces back to source nodes
 - ✅ **Explainable results** — GraphExplainer formats results with step-by-step reasoning chains and evidence
 
-**Also relevant to Track 02** (Agent Memory) — the 3-layer graph-based memory (episodic/semantic/procedural) persists conversations and concepts in graph nodes, and **Track 03** (Company Brain) — the full company data model connects people, teams, projects, systems, documents, tickets, and decisions.
+### Track 02 — Agent Memory and Coordination
+- ✅ **Episodic, semantic, and procedural memory** — 3-layer graph-based memory stores conversations, decisions, and learned facts as graph nodes
+- ✅ **Persistent conversation history** — Conversations and memories persist as `Conversation` and `Memory` nodes in the graph
+- ✅ **Shared state and handoffs between agents** — All memory stored in the shared graph, accessible to all agents via GraphContext interface
+- ✅ **High-concurrency reads and writes** — Backend-agnostic (FalkorDB supports concurrent Redis operations; InMemory uses NetworkX)
+- ✅ **Separate memory per user or tenant** — CLI supports `--user` flag for per-user memory isolation
+
+### Track 03 — Company Brain
+- ✅ **Knowledge from docs, tickets, and chats in one graph** — All entities (48 nodes: people, teams, projects, systems, documents, decisions, meetings, tickets, skills) unified in one knowledge graph
+- ✅ **Who owns what, and who knows what** — OWNS relationships link people to systems; HAS_SKILL links people to skills; USES links projects to systems
+- ✅ **Tracing decisions back to their source** — Decision → BASED_ON → Document and Decision → MADE_IN → Meeting relationships trace every decision to its source
+- ✅ **Keeping knowledge current as things change** — Live API (`/api/seed`) allows re-seeding; graph context auto-selects FalkorDB in production
+- ✅ **Answers with clear sources** — Every answer includes path traces and raw results backing the claim
 
 ## Project Structure
 
